@@ -14,13 +14,13 @@ class OCR():
         """
         Returns the text found in the given image.
         """
-        return pytesseract.image_to_string(image)
+        return pytesseract.image_to_string(image, lang="chi_sim")
     def find_word(self, image, text, confidence=0.6):
         """
         Finds the first word in `image` that matches `text`.
         Currently ignores confidence
         """
-        data = pytesseract.image_to_data(image)
+        data = pytesseract.image_to_data(image, lang="chi_sim")
         reader = csv.DictReader(data.split("\n"), delimiter="\t", quoting=csv.QUOTE_NONE)
         for rect in reader:
             if re.search(text, rect["text"]):
@@ -39,7 +39,7 @@ class OCR():
         Finds all lines in `image` that match `text`.
         Currently ignores confidence
         """
-        data = pytesseract.image_to_data(image)
+        data = pytesseract.image_to_data(image, lang="chi_sim")
         reader = csv.DictReader(data.split("\n"), delimiter="\t", quoting=csv.QUOTE_NONE)
         lines = {}
         for rect in reader:
@@ -65,7 +65,7 @@ class OCR():
         Currently ignores confidence
         """
         confidence = confidence*100 # Scaling for pytesseract
-        data = pytesseract.image_to_data(image)
+        data = pytesseract.image_to_data(image, lang="chi_sim")
         print(data)
         reader = csv.DictReader(data.split("\n"), delimiter="\t", quoting=csv.QUOTE_NONE)
         rects = [r for r in reader]

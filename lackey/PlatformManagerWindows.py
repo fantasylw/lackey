@@ -1,29 +1,13 @@
 """ Platform-specific code for Windows is encapsulated in this module. """
-
+from logging import warning
 import os
 import re
-import time
 import numpy
 import ctypes
 import threading
-try:
-    import Tkinter as tk
-except ImportError:
-    import tkinter as tk
-from ctypes import wintypes
+import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
-
 from .SettingsDebug import Debug
-
-# Python 3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
-try:
-    unicode
-except:
-    unicode = str
 
 class PlatformManagerWindows(object):
     """ Abstracts Windows-specific OS-level features """
@@ -81,7 +65,6 @@ class PlatformManagerWindows(object):
             "NUM6":		    "keypad 6",
             "NUM7":		    "keypad 7",
             "NUM8":		    "keypad 8",
-            "NUM9":		    "keypad 9",
             "NUM9":		    "keypad 9",
             "SEPARATOR":    83,
             "ADD":	        78,
@@ -244,7 +227,6 @@ class PlatformManagerWindows(object):
         representing the primary monitor.
         """
         monitors = self._getMonitorInfo()
-        primary_screen = None
         screens = []
         for monitor in monitors:
             # Convert screen rect to Lackey-style rect (x,y,w,h) as position in virtual screen
@@ -512,9 +494,9 @@ class PlatformManagerWindows(object):
         def callback(hwnd, context):
             if ctypes.windll.user32.IsWindowVisible(hwnd):
                 length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
-                buff = ctypes.create_unicode_buffer(length + 1)
+                buff = ctypes.create_str_buffer(length + 1)
                 ctypes.windll.user32.GetWindowTextW(hwnd, buff, length + 1)
-                if re.search(context["wildcard"], buff.value, flags=re.I) != None and not context["handle"]:
+                if re.search(context["wildcard"], buff.value, flags=re.I) is not None and not context["handle"]:
                     if context["order"] > 0:
                         context["order"] -= 1
                     else:
@@ -564,7 +546,7 @@ class PlatformManagerWindows(object):
     def getWindowTitle(self, hwnd):
         """ Gets the title for the specified window """
         length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
-        buff = ctypes.create_unicode_buffer(length + 1)
+        buff = ctypes.create_str_buffer(length + 1)
         ctypes.windll.user32.GetWindowTextW(hwnd, buff, length + 1)
         return buff.value
     def getWindowPID(self, hwnd):
@@ -588,12 +570,10 @@ class PlatformManagerWindows(object):
         """
         if tk._default_root is None:
             Debug.log(3, "Creating new temporary Tkinter root")
-            temporary_root = True
             root = tk.Tk()
             root.withdraw()
         else:
             Debug.log(3, "Borrowing existing Tkinter root")
-            temporary_root = False
             root = tk._default_root
         image_to_show = self.getBitmapFromRect(*rect)
         app = highlightWindow(root, rect, color, image_to_show)
@@ -620,10 +600,9 @@ class PlatformManagerWindows(object):
         ec = ExitCodeProcess()
         out = self._kernel32.GetExitCodeProcess(process, ctypes.byref(ec))
         if not out:
-            err = self._kernel32.GetLastError()
             if self._kernel32.GetLastError() == 5:
                 # Access is denied.
-                logging.warning("Access is denied to get pid info.")
+                warning("Access is denied to get pid info.")
             self._kernel32.CloseHandle(process)
             return False
         elif bool(ec.lpExitCode):
@@ -639,6 +618,7 @@ class PlatformManagerWindows(object):
         PROCESS_TERMINATE = 0x0001
         hProcess = self._kernel32.OpenProcess(SYNCHRONIZE|PROCESS_TERMINATE, True, pid)
         result = self._kernel32.TerminateProcess(hProcess, 0)
+        print(result)
         self._kernel32.CloseHandle(hProcess)
     def getProcessName(self, pid):
         if pid <= 0:

@@ -5,13 +5,8 @@ import multiprocessing
 import time
 
 import keyboard
-from keyboard import mouse
+import mouse
 
-# Python 3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
 class Mouse(object):
     """ Mid-level mouse routines. """
@@ -286,7 +281,7 @@ class Keyboard(object):
     def keyDown(self, keys):
         """ Accepts a string of keys (including special keys wrapped in brackets or provided
         by the Key or KeyModifier classes). Holds down all of them. """
-        if not isinstance(keys, basestring):
+        if not isinstance(keys, str):
             raise TypeError("keyDown expected keys to be a string")
         in_special_code = False
         special_code = ""
@@ -316,7 +311,7 @@ class Keyboard(object):
     def keyUp(self, keys):
         """ Accepts a string of keys (including special keys wrapped in brackets or provided
         by the Key or KeyModifier classes). Releases any that are held down. """
-        if not isinstance(keys, basestring):
+        if not isinstance(keys, str):
             raise TypeError("keyUp expected keys to be a string")
         in_special_code = False
         special_code = ""
@@ -350,9 +345,6 @@ class Keyboard(object):
         """
         in_special_code = False
         special_code = ""
-        modifier_held = False
-        modifier_stuck = False
-        modifier_codes = []
 
         for i in range(0, len(text)):
             if text[i] == "{":

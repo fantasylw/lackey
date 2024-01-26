@@ -1,5 +1,3 @@
-from PIL import Image
-import itertools
 import numpy
 import cv2
 
@@ -243,7 +241,7 @@ class PyramidTemplateMatcher(object):
     def _build_pyramid(self, image, levels):
         """ Returns a list of reduced-size images, from smallest to original size """
         pyramid = [image]
-        for l in range(levels-1):
+        for _ in range(levels-1):
             if any(x < 20 for x in pyramid[-1].shape[:2]):
                 break
             pyramid.append(cv2.pyrDown(pyramid[-1]))

@@ -1,11 +1,6 @@
 from PIL import Image
 from numbers import Number
-try:
-    import Tkinter as tk
-    import tkMessageBox as tkmb
-except ImportError:
-    import tkinter as tk
-    import tkinter.messagebox as tkmb
+import tkinter.messagebox as tkmb
 import multiprocessing
 import pyperclip
 import tempfile
@@ -33,13 +28,7 @@ elif platform.system() == "Darwin":
     PlatformManager = PlatformManagerDarwin()
 else:
     raise NotImplementedError("Lackey is currently only compatible with Windows and OSX.")
-    
 
-# Python 3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 try:
     FOREVER = float("inf")
 except Exception:
@@ -62,7 +51,7 @@ class Pattern(object):
             self.similarity = target.similarity
             self.offset = target.offset.offset(0, 0) # Clone Location
             self.imagePattern = target.isImagePattern()
-        elif isinstance(target, basestring):
+        elif isinstance(target, str):
             self.setFilename(target)
         elif isinstance(target, numpy.ndarray):
             self.setImage(target)
@@ -492,7 +481,7 @@ class Region(object):
                 toEnable = arg
             elif isinstance(arg, Number):
                 seconds = arg
-            elif isinstance(arg, basestring):
+            elif isinstance(arg, str):
                 color = arg
         if self._highlighter is not None:
                 self._highlighter.close()
@@ -532,7 +521,7 @@ class Region(object):
             return None
         seconds = self.autoWaitTimeout
         if not isinstance(pattern, Pattern):
-            if not isinstance(pattern, basestring):
+            if not isinstance(pattern, str):
                 raise TypeError("find expected a string [image path] or Pattern object")
             pattern = Pattern(pattern)
         if not pattern.isImagePattern():
@@ -623,7 +612,7 @@ class Region(object):
         if seconds is None:
             seconds = self.autoWaitTimeout
         if not isinstance(pattern, Pattern):
-            if not isinstance(pattern, basestring):
+            if not isinstance(pattern, str):
                 raise TypeError("find expected a string [image path] or Pattern object")
             pattern = Pattern(pattern)
         if not pattern.isImagePattern():
@@ -676,7 +665,7 @@ class Region(object):
         if not pattern:
             time.sleep(seconds)
         if not isinstance(pattern, Pattern):
-            if not isinstance(pattern, basestring):
+            if not isinstance(pattern, str):
                 raise TypeError("find expected a string [image path] or Pattern object")
             pattern = Pattern(pattern)
         if not pattern.isImagePattern():
@@ -735,7 +724,7 @@ class Region(object):
         target_location = None
         if isinstance(target, Pattern):
             target_location = self.find(target).getTarget()
-        elif isinstance(target, basestring):
+        elif isinstance(target, str):
             target_location = self.find(target).getTarget()
         elif isinstance(target, Match):
             target_location = target.getTarget()
@@ -766,7 +755,7 @@ class Region(object):
         target_location = None
         if isinstance(target, Pattern):
             target_location = self.find(target).getTarget()
-        elif isinstance(target, basestring):
+        elif isinstance(target, str):
             target_location = self.find(target).getTarget()
         elif isinstance(target, Match):
             target_location = target.getTarget()
@@ -801,7 +790,7 @@ class Region(object):
         target_location = None
         if isinstance(target, Pattern):
             target_location = self.find(target).getTarget()
-        elif isinstance(target, basestring):
+        elif isinstance(target, str):
             target_location = self.find(target).getTarget()
         elif isinstance(target, Match):
             target_location = target.getTarget()
@@ -833,7 +822,7 @@ class Region(object):
         target_location = None
         if isinstance(target, Pattern):
             target_location = self.find(target).getTarget()
-        elif isinstance(target, basestring):
+        elif isinstance(target, str):
             target_location = self.find(target).getTarget()
         elif isinstance(target, Match):
             target_location = target.getTarget()
@@ -855,7 +844,7 @@ class Region(object):
         dragFromLocation = None
         if isinstance(dragFrom, Pattern):
             dragFromLocation = self.find(dragFrom).getTarget()
-        elif isinstance(dragFrom, basestring):
+        elif isinstance(dragFrom, str):
             dragFromLocation = self.find(dragFrom).getTarget()
         elif isinstance(dragFrom, Match):
             dragFromLocation = dragFrom.getTarget()
@@ -878,7 +867,7 @@ class Region(object):
             dragTo = self._lastMatch or self # Whichever one is not None
         if isinstance(dragTo, Pattern):
             dragToLocation = self.find(dragTo).getTarget()
-        elif isinstance(dragTo, basestring):
+        elif isinstance(dragTo, str):
             dragToLocation = self.find(dragTo).getTarget()
         elif isinstance(dragTo, Match):
             dragToLocation = dragTo.getTarget()
@@ -930,17 +919,17 @@ class Region(object):
         pattern = None
         text = None
         modifiers = None
-        if len(args) == 1 and isinstance(args[0], basestring):
+        if len(args) == 1 and isinstance(args[0], str):
             # Is a string (or Key) to type
             text = args[0]
         elif len(args) == 2:
-            if not isinstance(args[0], basestring) and isinstance(args[1], basestring):
+            if not isinstance(args[0], str) and isinstance(args[1], str):
                 pattern = args[0]
                 text = args[1]
             else:
                 text = args[0]
                 modifiers = args[1]
-        elif len(args) == 3 and not isinstance(args[0], basestring):
+        elif len(args) == 3 and not isinstance(args[0], str):
             pattern = args[0]
             text = args[1]
             modifiers = args[2]
@@ -972,9 +961,9 @@ class Region(object):
         """
         target = None
         text = ""
-        if len(args) == 1 and isinstance(args[0], basestring):
+        if len(args) == 1 and isinstance(args[0], str):
             text = args[0]
-        elif len(args) == 2 and isinstance(args[1], basestring):
+        elif len(args) == 2 and isinstance(args[1], str):
             self.click(target)
             text = args[1]
         else:
@@ -1006,7 +995,7 @@ class Region(object):
             PSRML = self._lastMatch or self # Whichever one is not None
         if isinstance(PSRML, Pattern):
             move_location = self.find(PSRML).getTarget()
-        elif isinstance(PSRML, basestring):
+        elif isinstance(PSRML, str):
             move_location = self.find(PSRML).getTarget()
         elif isinstance(PSRML, Match):
             move_location = PSRML.getTarget()
@@ -1496,7 +1485,7 @@ class Region(object):
         if not text:
             time.sleep(seconds)
     
-        if not isinstance(text, basestring):
+        if not isinstance(text, str):
             raise TypeError("existsText expected a string")
     
         # Assume the pattern is text to match via OCR
@@ -1542,7 +1531,7 @@ class Region(object):
             return None
         if seconds is None:
             seconds = self.autoWaitTimeout
-        if not isinstance(text, basestring):
+        if not isinstance(text, str):
             raise TypeError("waitVanishText expected a string")
         
         timeout = time.time() + seconds
@@ -1568,7 +1557,7 @@ class Region(object):
         if r is None:
             raise ValueError("Region outside all visible screens")
         
-        if not isinstance(text, basestring):
+        if not isinstance(text, str):
             raise TypeError("findAllText expected a string")
 
         # Consult TextOCR to find needle text
@@ -1874,7 +1863,7 @@ class Observer(object):
         """
         if event_type not in self._supported_events:
             raise ValueError("Unsupported event type {}".format(event_type))
-        if event_type != "CHANGE" and not isinstance(pattern, Pattern) and not isinstance(pattern, basestring):
+        if event_type != "CHANGE" and not isinstance(pattern, Pattern) and not isinstance(pattern, str):
             raise ValueError("Expected pattern to be a Pattern or string")
         if event_type == "CHANGE" and not (len(pattern)==2 and isinstance(pattern[0], int) and isinstance(pattern[1], numpy.ndarray)):
             raise ValueError("For \"CHANGE\" events, ``pattern`` should be a tuple of ``min_changed_pixels`` and the base screen state.")
@@ -2081,7 +2070,7 @@ class Screen(Region):
         elif isinstance(args[0], tuple):
             # Capture region defined by specified tuple
             region = Region(*args[0])
-        elif isinstance(args[0], basestring):
+        elif isinstance(args[0], str):
             # Interactive mode
             raise NotImplementedError("Interactive capture mode not defined")
         elif isinstance(args[0], int):

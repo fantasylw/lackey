@@ -252,4 +252,25 @@ if platform.system() in VALID_PLATFORMS:
         if callable(getattr(SCREEN, prop, None)) and prop[0] != "_":
             # Property is a method, and is not private. Dump it into the global namespace.
             globals()[prop] = getattr(SCREEN, prop, None)
-            
+    
+
+__all__ = [
+    "Button", "Key", "KeyModifier",
+    "Pattern", "Region", "Match", "Screen", "ObserveEvent", "PlatformManager", "FOREVER",
+    "Location",
+    "Mouse", "Keyboard",
+    "App",
+    "FindFailed", "ImageMissing",
+    "Debug", "Settings", "DebugMaster", "SettingsMaster",
+    "PopupInput", "PopupList", "PopupTextarea",
+    "__version__",
+    "sleep", "exit",
+    "setShowActions",
+    "getBundlePath", "getBundleFolder", "setBundlePath",
+    "getImagePath", "addImagePath", "addHTTPImagePath",
+    "getParentPath", "getParentFolder", "makePath", "makeFolder",
+    "unzip", #"zipfile",
+    "popat", "popup", "popError", "popAsk",
+    "input", "inputText", "select", "popFile",
+    "SCREEN", "ImportHandler"
+]

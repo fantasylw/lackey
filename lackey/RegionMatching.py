@@ -548,7 +548,7 @@ class Region(object):
                 matches = TextOCR.find_all_in_image(r.getBitmap(), pattern.path, pattern.similarity)
                 time.sleep(1/self._defaultScanRate if self._defaultScanRate is not None else 1/Settings.WaitScanRate)
         else:
-            needle = cv2.imread(pattern.path)
+            needle = pattern.image
             if needle is None:
                 raise ValueError("Unable to load image '{}'".format(pattern.path))
             needle_height, needle_width, needle_channels = needle.shape

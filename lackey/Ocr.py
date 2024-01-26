@@ -2,7 +2,7 @@ import pytesseract
 import csv
 import re
 
-from .SettingsDebug import Debug
+# from .SettingsDebug import Debug
 
 class OCR():
     def start(self):

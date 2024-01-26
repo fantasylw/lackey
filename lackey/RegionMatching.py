@@ -440,11 +440,11 @@ class Region(object):
             w = expand
             h = self.h
         return Region(x, y, w, h).clipRegionToScreen()
-    def add(self, l, r, t, b):
-        x = self.getX() - l
-        y = self.getY() - t
-        w = self.getW() + l + r
-        h = self.getH() + t + b
+    def add(self, left, right, top, bottom):
+        x = self.getX() - left
+        y = self.getY() - top
+        w = self.getW() + left + right
+        h = self.getH() + top + bottom
         self.setRect(x, y, w, h)
         return self
     
@@ -1030,18 +1030,12 @@ class Region(object):
             PSRML = None
             direction = int(args[0])
             steps = int(args[1])
-            stepDelay = None
-        elif len(args) == 3:
+        elif len(args) >= 3:
             PSRML = args[0]
             direction = int(args[1])
             steps = int(args[2])
-            stepDelay = None
-        elif len(args) == 4:
-            PSRML = args[0]
-            direction = int(args[1])
-            steps = int(args[2])
-            stepDelay = int(args[3])
-        
+        else:
+            raise TypeError("wheel expected ([PSRML], direction, steps, [stepDelay])")
         if PSRML is not None:
             self.mouseMove(PSRML)
         Mouse.wheel(direction, steps)

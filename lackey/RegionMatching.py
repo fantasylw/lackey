@@ -1,4 +1,4 @@
-from PIL import Image, ImageTk
+from PIL import Image
 from numbers import Number
 try:
     import Tkinter as tk
@@ -7,7 +7,6 @@ except ImportError:
     import tkinter as tk
     import tkinter.messagebox as tkmb
 import multiprocessing
-import subprocess
 import pyperclip
 import tempfile
 import platform
@@ -17,7 +16,6 @@ import uuid
 import cv2
 import sys
 import os
-import re
 
 from .InputEmulation import Mouse as MouseClass, Keyboard
 from .Exceptions import FindFailed, ImageMissing
@@ -44,7 +42,7 @@ except NameError:
     basestring = str
 try:
     FOREVER = float("inf")
-except:
+except Exception:
     import math
     FOREVER = math.inf
 
@@ -331,7 +329,7 @@ class Region(object):
         self._defaultScanRate = float(seconds)
     def getWaitScanRate(self):
         """ Get the current scan rate """
-        return self._defaultScanRate if not self._defaultScanRate is None else Settings.WaitScanRate
+        return self._defaultScanRate if self._defaultScanRate is not None else Settings.WaitScanRate
 
     def offset(self, location, dy=0):
         """ Returns a new ``Region`` offset from this one by ``location``
@@ -344,7 +342,6 @@ class Region(object):
         r = Region(self.x+location.x, self.y+location.y, self.w, self.h).clipRegionToScreen()
         if r is None:
             raise ValueError("Specified region is not visible on any screen")
-            return None
         return r
     def grow(self, width, height=None):
         """ Expands the region by ``width`` on both sides and ``height`` on the top and bottom.
@@ -381,7 +378,7 @@ class Region(object):
         Does not include the current region. If range is omitted, it reaches to the top of the
         screen. The new region has the same width and x-position as the current region.
         """
-        if expand == None:
+        if expand is None:
             x = self.x
             y = 0
             w = self.w
@@ -398,7 +395,7 @@ class Region(object):
         Does not include the current region. If range is omitted, it reaches to the bottom
         of the screen. The new region has the same width and x-position as the current region.
         """
-        if expand == None:
+        if expand is None:
             x = self.x
             y = self.y+self.h
             w = self.w
@@ -415,7 +412,7 @@ class Region(object):
         Does not include the current region. If range is omitted, it reaches to the left border
         of the screen. The new region has the same height and y-position as the current region.
         """
-        if expand == None:
+        if expand is None:
             x = 0
             y = self.y
             w = self.x
@@ -432,7 +429,7 @@ class Region(object):
         Does not include the current region. If range is omitted, it reaches to the right border
         of the screen. The new region has the same height and y-position as the current region.
         """
-        if expand == None:
+        if expand is None:
             x = self.x+self.w
             y = self.y
             w = self.getScreen().getBounds()[2] - x
@@ -491,7 +488,7 @@ class Region(object):
         if len(args) > 3:
             raise TypeError("Unrecognized argument(s) for highlight()")
         for arg in args:
-            if type(arg) == bool:
+            if isinstance(arg, bool):
                 toEnable = arg
             elif isinstance(arg, Number):
                 seconds = arg
@@ -551,8 +548,6 @@ class Region(object):
             needle = pattern.image
             if needle is None:
                 raise ValueError("Unable to load image '{}'".format(pattern.path))
-            needle_height, needle_width, needle_channels = needle.shape
-            positions = []
             timeout = time.time() + seconds
 
             # Check TemplateMatcher for valid matches
@@ -632,6 +627,7 @@ class Region(object):
                 raise TypeError("find expected a string [image path] or Pattern object")
             pattern = Pattern(pattern)
         if not pattern.isImagePattern():
+            match = True
             # Assume the pattern is text to match via OCR
             timeout = time.time() + seconds
 
@@ -1083,7 +1079,6 @@ class Region(object):
             return None
         screens = PlatformManager.getScreenDetails()
         total_x, total_y, total_w, total_h = Screen(-1).getBounds()
-        containing_screen = None
         for screen in screens:
             s_x, s_y, s_w, s_h = screen["rect"]
             if self.x >= s_x and self.x+self.w <= s_x+s_w and self.y >= s_y and self.y+self.h <= s_y+s_h:
@@ -1220,7 +1215,7 @@ class Region(object):
         Region.get(525) will use a raster of 5 rows and 5 columns and return the row in the middle.
         """
         if part == self.MID_VERTICAL:
-            return Region(self.x+(self.w/4), y, self.w/2, self.h)
+            return Region(self.x+(self.w/4), self.y, self.w/2, self.h)
         elif part == self.MID_HORIZONTAL:
             return Region(self.x, self.y+(self.h/4), self.w, self.h/2)
         elif part == self.MID_BIG:
@@ -1330,7 +1325,7 @@ class Region(object):
             _, target_file = tempfile.mkstemp(".png")
         elif name is None:
             _, tpath = tempfile.mkstemp(".png")
-            target_file = os.path.join(path, tfile)
+            target_file = os.path.join(path, tpath)
         else:
             target_file = os.path.join(path, name+".png")
         cv2.imwrite(target_file, bitmap)
@@ -1365,19 +1360,19 @@ class Region(object):
         by ``offset``) """
         return Location(self.getX() + (self.getW() / 2), self.getY() + self.getH() + offset)
 
-    def union(ur):
+    def union(self, ur):
         """ Returns a new region that contains both this region and the specified region """
         x = min(self.getX(), ur.getX())
         y = min(self.getY(), ur.getY())
         w = max(self.getBottomRight().x, ur.getBottomRight().x) - x
         h = max(self.getBottomRight().y, ur.getBottomRight().y) - y
         return Region(x, y, w, h)
-    def intersection(ir):
+    def intersection(self, ir):
         """ Returns a new region that contains the overlapping portion of this region and the specified region (may be None) """
-        x = max(self.getX(), ur.getX())
-        y = max(self.getY(), ur.getY())
-        w = min(self.getBottomRight().x, ur.getBottomRight().x) - x
-        h = min(self.getBottomRight().y, ur.getBottomRight().y) - y
+        x = max(self.getX(), ir.getX())
+        y = max(self.getY(), ir.getY())
+        w = min(self.getBottomRight().x, ir.getBottomRight().x) - x
+        h = min(self.getBottomRight().y, ir.getBottomRight().y) - y
         if w > 0 and h > 0:
             return Region(x, y, w, h)
         return None
@@ -1416,7 +1411,7 @@ class Region(object):
         return best_match
     def compare(self, image):
         """ Compares the region to the specified image """
-        return exists(Pattern(image), 0)
+        return self.exists(Pattern(image), 0)
 
     # OCR Functions
     def findText(self, text):
@@ -1578,8 +1573,6 @@ class Region(object):
         r = self.clipRegionToScreen()
         if r is None:
             raise ValueError("Region outside all visible screens")
-            return None
-        seconds = self.autoWaitTimeout
         
         if not isinstance(text, basestring):
             raise TypeError("findAllText expected a string")
@@ -1839,7 +1832,7 @@ class Region(object):
             self._findFailedHandler(event)
         response = (event._response or self._findFailedResponse)
         if response == "PROMPT":
-            response = _findFailedPrompt(pattern)
+            response = self._findFailedPrompt(pattern)
 
         if response == "ABORT":
             raise FindFailed(event)
@@ -1912,11 +1905,11 @@ class Observer(object):
             event_type = event["event_type"]
             pattern = event["pattern"]
             handler = event["handler"]
-            if event_type == "APPEAR" and self._region.exists(event["pattern"], 0):
+            if event_type == "APPEAR" and self._region.exists(pattern, 0):
                 # Call the handler with a new ObserveEvent object
                 appear_event = ObserveEvent(self._region,
                                             count=event["count"],
-                                            pattern=event["pattern"],
+                                            pattern=pattern,
                                             event_type=event["event_type"])
                 if callable(handler):
                     handler(appear_event)
@@ -1924,11 +1917,11 @@ class Observer(object):
                 event["count"] += 1
                 # Event handlers are inactivated after being caught once
                 event["active"] = False
-            elif event_type == "VANISH" and not self._region.exists(event["pattern"], 0):
+            elif event_type == "VANISH" and not self._region.exists(pattern, 0):
                 # Call the handler with a new ObserveEvent object
                 vanish_event = ObserveEvent(self._region,
                                             count=event["count"],
-                                            pattern=event["pattern"],
+                                            pattern=pattern,
                                             event_type=event["event_type"])
                 if callable(handler):
                     handler(vanish_event)
@@ -1939,11 +1932,11 @@ class Observer(object):
                 event["active"] = False
             # For a CHANGE event, ``pattern`` is a tuple of
             # (min_pixels_changed, original_region_state)
-            elif event_type == "CHANGE" and self._region.isChanged(*event["pattern"]):
+            elif event_type == "CHANGE" and self._region.isChanged(*pattern):
                 # Call the handler with a new ObserveEvent object
                 change_event = ObserveEvent(self._region,
                                             count=event["count"],
-                                            pattern=event["pattern"],
+                                            pattern=pattern,
                                             event_type=event["event_type"])
                 if callable(handler):
                     handler(change_event)
@@ -2007,7 +2000,7 @@ class FindFailedEvent(ObserveEvent):
     def __init__(self, *args, **kwargs):
         ObserveEvent.__init__(self, *args, **kwargs)
         self._response = None
-    def setResponse(response):
+    def setResponse(self, response):
         valid_responses = ("ABORT", "SKIP", "PROMPT", "RETRY")
         if response not in valid_responses:
             raise ValueError("Invalid response - expected one of ({})".format(", ".join(valid_responses)))
@@ -2021,7 +2014,7 @@ class ImageMissingEvent(ObserveEvent):
     def __init__(self, *args, **kwargs):
         ObserveEvent.__init__(self, *args, **kwargs)
         self._response = None
-    def setResponse(response):
+    def setResponse(self, response):
         valid_responses = ("ABORT", "SKIP", "RETRY")
         if response not in valid_responses:
             raise ValueError("Invalid response - expected one of ({})".format(", ".join(valid_responses)))

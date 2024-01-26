@@ -159,7 +159,6 @@ class Keyboard(object):
             "NUM7":		    "keypad 7",
             "NUM8":		    "keypad 8",
             "NUM9":		    "keypad 9",
-            "NUM9":		    "keypad 9",
             "SEPARATOR":    83,
             "ADD":	        78,
             "MINUS":        74,
